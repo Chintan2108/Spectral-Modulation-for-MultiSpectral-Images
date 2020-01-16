@@ -10,10 +10,10 @@ import os
 import numpy as np
 from tqdm import tqdm
 
-temp = open('./local_data/PATH.txt')
+temp = open('./../local_data/PATH.txt')
 PATH = temp.read()
 LOCS = os.listdir(PATH)
-temp = open('./local_data/PATH.txt')
+temp = open('./../local_data/PATH.txt')
 W_PATH = temp.read()
 
 def readBand(band):
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                     classified_img[row][col] = 255
             
             
-    writeBand(classified_img, green[2], green[1], W_PATH + '/wb_s2_msi_l2a_swir_th_90.tiff')
+    writeBand(classified_img, green[2], green[1], W_PATH + '/Sentinel2_L2A/wb_s2_msi_l2a_swir_th_90.tiff')
                         
             
     
