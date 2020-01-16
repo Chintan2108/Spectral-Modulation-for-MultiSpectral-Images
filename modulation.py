@@ -10,9 +10,11 @@ import os
 import numpy as np
 from tqdm import tqdm
 
-PATH = 'D:\Chintan Data\Module 2\Research\Kernel Development\Okeechobee Data\S2A_MSIL2A_20200101T160511_N0213_R054_T17RNK_20200101T200214.SAFE\GRANULE\L2A_T17RNK_A023646_20200101T160506\IMG_DATA\R20m'
+temp = open('./local_data/PATH.txt')
+PATH = temp.read()
 LOCS = os.listdir(PATH)
-W_PATH = 'D:\Chintan Data\Module 2\Research\Spectra Based Classification'
+temp = open('./local_data/PATH.txt')
+W_PATH = temp.read()
 
 def readBand(band):
     '''
