@@ -6,12 +6,13 @@ Created on Thu Jan 16 01:05:30 2020
 """
 
 import osr, gdal
-import os, pickle
+import os
 import numpy as np
 from tqdm import tqdm
 
 PATH = 'D:\Chintan Data\Module 2\Research\Kernel Development\Okeechobee Data\S2A_MSIL2A_20200101T160511_N0213_R054_T17RNK_20200101T200214.SAFE\GRANULE\L2A_T17RNK_A023646_20200101T160506\IMG_DATA\R20m'
 LOCS = os.listdir(PATH)
+W_PATH = 'D:\Chintan Data\Module 2\Research\Spectra Based Classification'
 
 def readBand(band):
     '''
@@ -29,21 +30,42 @@ def readBand(band):
     
     return data, spatialRef, geoTransform, targetprj
 
+def writeBand(array, geoTransform, projection, filename):
+    '''
+    This function converts np array to raster image and stores a GeoTiff file on the disk
+    '''
+    
+    pixels_x = array.shape[0]
+    pixels_y = array.shape[1]
+    
+    driver = gdal.GetDriverByName('GTiff')
+    dataset = driver.Create(
+            filename,
+            pixels_x,
+            pixels_y,
+            1,
+            gdal.GDT_Float64)
+    dataset.SetGeoTransform(geoTransform)
+    dataset.SetProjection(projection)
+    dataset.GetRasterBand(1).WriteArray(array)
+    dataset.FlushCache()
+    
+
 if __name__ == "__main__":
     '''
     driver function
     '''
-    green = readBand('B03')[0]
-    red = readBand('B04')[0]
-    nir = readBand('B8A')[0]
-    swir = readBand('B11')[0]
+    green = readBand('B03')
+    red = readBand('B04')
+    nir = readBand('B8A')
+    swir = readBand('B11')
     
-    classified_img = [[0 for j in range(5490)] for i in range(5490)]
+    classified_img = np.zeros((5490,5490),dtype=np.uint8)
     
     flag = False
     for row in tqdm(range(5490)):
         for col in range(5490):
-            spectra = [green[row][col], red[row][col], nir[row][col], swir[row][col]]
+            spectra = [green[0][row][col], red[0][row][col], nir[0][row][col], swir[0][row][col]]
             modulation = ""
             for x in range(len(spectra)):
                 for y in range(x+1,len(spectra)):
@@ -53,11 +75,15 @@ if __name__ == "__main__":
                         modulation += '1'
                     else:
                         modulation += '0'
-            classified_img[row][col] = modulation
+                if modulation == '222222' and spectra[-1] < 91:
+                    classified_img[row][col] = 50
+                elif modulation == '022222' and spectra[-1] < 91:
+                    classified_img[row][col] = 150
+                else:
+                    classified_img[row][col] = 255
             
-    with open('./classified_img.data', 'wb') as pf:
-        pickle.dump(classified_img, pf)
             
+    writeBand(classified_img, green[2], green[1], W_PATH + '/wb_s2_msi_l2a_swir_th_90.tiff')
                         
             
     
