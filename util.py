@@ -48,7 +48,6 @@ def writeBand(array, geoTransform, projection, filename):
             pixels_y,
             1,
             gdal.GDT_Float64)
-    print(dataset)
     dataset.SetGeoTransform(geoTransform)
     dataset.SetProjection(projection)
     dataset.GetRasterBand(1).WriteArray(array)

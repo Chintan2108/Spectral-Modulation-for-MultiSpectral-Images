@@ -9,16 +9,14 @@ REFLECTANCE_MULT = (0.0011966, 0.0025008, 0.0021282, 0.0025759, 0.0017441, 0.002
 REFLECTANCE_ADD = (-0.003572, -0.007405, -0.004513, -0.007016, -0.007106, -0.007961)
 
 import sys, os
-sys.path.append(os.path.abspath('D:\Chintan Data\GITHUB\Spectral-Modulation-for-MultiSpectral-Images'))
+sys.path.append(os.path.abspath(open('./../local_data/ACTIVEX.txt').readlines()[0].split('\n')[0]))
 import util
 import numpy as np
 from tqdm import tqdm
 
-temp = open('./../local_data/R_PATH_Landsat.txt')
-PATH = temp.read()
+PATH = open('./../local_data/R_PATH_Landsat.txt').readlines()
 
-temp = open('./../local_data/W_PATH_Landsat.txt')
-W_PATH = temp.readlines()
+W_PATH = open('./../local_data/W_PATH_Landsat.txt').readlines()
 
 if __name__ == "__main__":
     '''
@@ -28,7 +26,7 @@ if __name__ == "__main__":
     bands = ('B2','B3','B4','B5')
     Radiance_bands = []
     for band in bands:
-        Radiance_bands.append(util.readBand(band, PATH))
+        Radiance_bands.append(util.readBand(band, PATH[0].split('\n')[0]))
     
     
     
@@ -41,7 +39,7 @@ if __name__ == "__main__":
         for row in tqdm(range(rows)):
             for col in range(cols):
                 corrected_img[row][col] = mult*band[0][row][col] + add
-        util.writeBand(corrected_img, band[2], band[1], os.path.join(W_PATH[1], band_name + '.tif'))
+        util.writeBand(corrected_img, band[2], band[1], os.path.join(W_PATH[1].split('\n')[0], band_name + '.tif'))
         print('Done')
         
         
