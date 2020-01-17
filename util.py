@@ -10,17 +10,14 @@ import os
 import numpy as np
 from tqdm import tqdm
 
-temp = open('./../local_data/PATH.txt')
-PATH = temp.read()
-LOCS = os.listdir(PATH)
-temp = open('./../local_data/PATH.txt')
-W_PATH = temp.read()
-
-def readBand(band):
+def readBand(band, PATH):
     '''
-    This function reads the jp2 file for the said band
+    This function reads the jp2/tif file for the said band
+    args: band (str) --> band no. eg: 'B7' in case of Landsat, 'B07' in case of Sentinel
+          PATH (str) --> Path to folder containing band files
     '''
     path = ''
+    LOCS = os.listdir(PATH)
     for i in LOCS:
         if band in i:
             path = os.path.join(PATH,i)
@@ -35,10 +32,14 @@ def readBand(band):
 def writeBand(array, geoTransform, projection, filename):
     '''
     This function converts np array to raster image and stores a GeoTiff file on the disk
+    args: array --> numpy array containing DN values
+          geoTransform --> affine transformation coefficients
+          projection --> projection info
+          filename --> output filepath
     '''
     
-    pixels_x = array.shape[0]
-    pixels_y = array.shape[1]
+    pixels_x = array.shape[1]
+    pixels_y = array.shape[0]
     
     driver = gdal.GetDriverByName('GTiff')
     dataset = driver.Create(
@@ -47,27 +48,36 @@ def writeBand(array, geoTransform, projection, filename):
             pixels_y,
             1,
             gdal.GDT_Float64)
+    print(dataset)
     dataset.SetGeoTransform(geoTransform)
     dataset.SetProjection(projection)
     dataset.GetRasterBand(1).WriteArray(array)
     dataset.FlushCache()
     
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+def spectralModulation(bands, outputPath):
     '''
-    driver function
+    This function performs modulation for the spectra of TBD bands for feature based classification 
+    args: bands --> a tuple of bands on which spectral modulation is to be performed
+          outputPath --> Path to output directory
+    NOTE: The order for the bands must be maintained same as the ordinality desired for modulation
     '''
-    green = readBand('B03')
-    red = readBand('B04')
-    nir = readBand('B8A')
-    swir = readBand('B11')
+#    green = readBand('B03')
+#    red = readBand('B04')
+#    nir = readBand('B8A')
+#    swir = readBand('B11')
     
-    classified_img = np.zeros((5490,5490),dtype=np.uint8)
+    rows, cols = bands[0][0].shape
     
-    flag = False
-    for row in tqdm(range(5490)):
-        for col in range(5490):
-            spectra = [green[0][row][col], red[0][row][col], nir[0][row][col], swir[0][row][col]]
+    classified_img = np.zeros((rows,cols),dtype=np.float16)
+    
+    for row in tqdm(range(rows)):
+        for col in range(cols):
+            spectra = []
+            for band in bands:
+                spectra.append(band[0][row][col])
+            #spectra = [green[0][row][col], red[0][row][col], nir[0][row][col], swir[0][row][col]]
             modulation = ""
             for x in range(len(spectra)):
                 for y in range(x+1,len(spectra)):
@@ -85,7 +95,7 @@ if __name__ == "__main__":
                     classified_img[row][col] = 255
             
             
-    writeBand(classified_img, green[2], green[1], W_PATH + '/Sentinel2_L2A/wb_s2_msi_l2a_swir_th_90.tiff')
+    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/wb_s2_msi_l2a_swir_th_90.tiff')
                         
             
     

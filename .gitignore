@@ -1,2 +1,4 @@
 # Ignore the following local info folders
 local_data/
+Sentinel2_L2A/output/
+Landsat5_TM_L1/output/
