@@ -15,23 +15,20 @@ import numpy as np
 from tqdm import tqdm
 
 PATH = open('./../local_data/R_PATH_Landsat.txt').readlines()
-
 W_PATH = open('./../local_data/W_PATH_Landsat.txt').readlines()
 
-if __name__ == "__main__":
+def level2Corr(bands, inputPath, outputPath):
     '''
-    driver function
-    '''
-    #read band files
-    bands = ('B2','B3','B4','B5')
+    This function performs level 2 correction on the level 0 Landsat 5 TM data and saves the corrected bands as tif rasters
+    args: bands (tuple)    --> This is a tuple containing identifier of band name for correction. eg - ('B1','B5')
+          inputPath (str)  --> This is the path to directory containing the level 1 data
+          outputPath (str) --> This is the path to directory where the level 2 data is to be saved
+     '''
     Radiance_bands = []
     for band in bands:
-        Radiance_bands.append(util.readBand(band, PATH[0].split('\n')[0]))
-    
-    
+        Radiance_bands.append(util.readBand(band, inputPath))
     
     #performing correction upto level 2: DN -> Radiance -> Reflectance
-    TOA_bands = []
     for band_name, band, mult, add in zip(bands, Radiance_bands, REFLECTANCE_MULT[1:-1], REFLECTANCE_ADD[1:-1]):
         tqdm.write('Correcting %s... ' % band_name, end='')
         rows, cols = band[0].shape
@@ -39,8 +36,26 @@ if __name__ == "__main__":
         for row in tqdm(range(rows)):
             for col in range(cols):
                 corrected_img[row][col] = mult*band[0][row][col] + add
-        util.writeBand(corrected_img, band[2], band[1], os.path.join(W_PATH[1].split('\n')[0], band_name + '.tif'))
+        util.writeBand(corrected_img, band[2], band[1], os.path.join(outputPath, band_name + '.tif'))
         print('Done')
+     
+
+if __name__ == "__main__":
+    '''
+    driver function
+    '''
+    #perform correction using header file for DN to Reflectance conversion
+    bands = ('B2','B3','B4','B5')
+    #level2Corr(bands, PATH[0].split('\n')[0], W_PATH[1].split('\n')[0])
+    
+    #read corrected bands
+    TOA_bands = []
+    for band in bands:
+        TOA_bands.append(util.readBand(band, PATH[1].split('\n')[0]))
+    
+    #perform modulation
+    util.spectralModulation(tuple(TOA_bands), W_PATH[0].split('\n')[0])
+    
         
         
     

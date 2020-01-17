@@ -6,7 +6,7 @@ Created on Thu Jan 16 01:05:30 2020
 """
 
 import osr, gdal
-import os
+import os, pickle
 import numpy as np
 from tqdm import tqdm
 
@@ -62,15 +62,13 @@ def spectralModulation(bands, outputPath):
           outputPath --> Path to output directory
     NOTE: The order for the bands must be maintained same as the ordinality desired for modulation
     '''
-#    green = readBand('B03')
-#    red = readBand('B04')
-#    nir = readBand('B8A')
-#    swir = readBand('B11')
     
     rows, cols = bands[0][0].shape
     
     classified_img = np.zeros((rows,cols),dtype=np.float16)
+    classes = {}
     
+    flag = False
     for row in tqdm(range(rows)):
         for col in range(cols):
             spectra = []
@@ -86,15 +84,23 @@ def spectralModulation(bands, outputPath):
                         modulation += '1'
                     else:
                         modulation += '0'
-                if modulation == '222222' and spectra[-1] < 91:
-                    classified_img[row][col] = 50
-                elif modulation == '022222' and spectra[-1] < 91:
-                    classified_img[row][col] = 150
-                else:
-                    classified_img[row][col] = 255
+            if modulation in classes:
+                classes[modulation] += 1
+            else: 
+                classes[modulation] = 1
+                
+            if modulation == '222222' and spectra[-1] < 0.003:
+                classified_img[row][col] = 0
+            elif modulation == '022222' and spectra[-1] < 0.0036:
+                classified_img[row][col] = 150
+            else:
+                classified_img[row][col] = 255
             
             
-    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/wb_s2_msi_l2a_swir_th_90.tiff')
+    print(classes)
+    with open(outputPath + '/classes.txt', 'wb') as temp:
+        temp.write(pickle.dumps(classes))
+    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_swir_th.tiff')
                         
             
     
