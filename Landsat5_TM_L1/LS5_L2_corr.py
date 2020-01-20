@@ -55,7 +55,6 @@ if __name__ == "__main__":
     
     #perform modulation
     util.spectralModulation(tuple(TOA_bands), W_PATH[0].split('\n')[0])
-    
         
         
     

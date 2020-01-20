@@ -66,7 +66,9 @@ def spectralModulation(bands, outputPath):
     rows, cols = bands[0][0].shape
     
     classified_img = np.zeros((rows,cols),dtype=np.float16)
+    water_img = np.zeros((rows,cols),dtype=np.float16)
     classes = {}
+    class_counter = 1
     
     for row in tqdm(range(rows)):
         for col in range(cols):
@@ -83,22 +85,27 @@ def spectralModulation(bands, outputPath):
                         modulation += '1'
                     else:
                         modulation += '0'
+            
             if modulation in classes:
-                classes[modulation] += 1
-            else: 
-                classes[modulation] = 1
+                classified_img[row][col] = classes[modulation][0]
+                classes[modulation][1] += 1
+            else:
+                classified_img[row][col] = class_counter
+                classes[modulation] = [class_counter, 0]
+                class_counter += 1
                 
             if modulation == '222222' and spectra[-1] < 0.003:
-                classified_img[row][col] = 0
+                water_img[row][col] = 0
             elif modulation == '022222' and spectra[-1] < 0.0036:
-                classified_img[row][col] = 150
+                water_img[row][col] = 150
             else:
-                classified_img[row][col] = 255
+                water_img[row][col] = 255
             
             
-    with open(outputPath + '/classes.txt', 'wb') as temp:
-        temp.write(pickle.dumps(classes))
-    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_swir_th.tiff')
+    with open(outputPath + '/classes.txt', 'w') as temp:
+        print(classes,file=temp)
+    writeBand(water_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_all_classes.tiff')
+    writeBand(water_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_swir_water.tiff')
                         
             
     
