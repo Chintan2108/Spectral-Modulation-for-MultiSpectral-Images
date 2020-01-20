@@ -94,17 +94,15 @@ def spectralModulation(bands, outputPath):
                 classes[modulation] = [class_counter, 0]
                 class_counter += 1
                 
-            if modulation == '222222' and spectra[-1] < 0.003:
+            if (modulation == '222222') or (modulation == '022222'):
                 water_img[row][col] = 0
-            elif modulation == '022222' and spectra[-1] < 0.0036:
-                water_img[row][col] = 150
             else:
                 water_img[row][col] = 255
             
             
     with open(outputPath + '/classes.txt', 'w') as temp:
         print(classes,file=temp)
-    writeBand(water_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_all_classes.tiff')
+    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_all_classes.tiff')
     writeBand(water_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_swir_water.tiff')
                         
             
