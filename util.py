@@ -29,7 +29,7 @@ def readBand(band, PATH):
     
     return data, spatialRef, geoTransform, targetprj
 
-def writeBand(array, geoTransform, projection, filename):
+def writeBand(array, geoTransform, projection, filename, dtype=gdal.GDT_Int32):
     '''
     This function converts np array to raster image and stores a GeoTiff file on the disk
     args: array --> numpy array containing DN values
@@ -47,7 +47,7 @@ def writeBand(array, geoTransform, projection, filename):
             pixels_x,
             pixels_y,
             1,
-            gdal.GDT_Float64)
+            dtype)
     dataset.SetGeoTransform(geoTransform)
     dataset.SetProjection(projection)
     dataset.GetRasterBand(1).WriteArray(array)
