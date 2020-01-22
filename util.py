@@ -6,7 +6,7 @@ Created on Thu Jan 16 01:05:30 2020
 """
 
 import osr, gdal
-import os, pickle
+import os
 import numpy as np
 from tqdm import tqdm
 
@@ -29,14 +29,14 @@ def readBand(band, PATH):
     
     return data, spatialRef, geoTransform, targetprj
 
-def writeBand(array, geoTransform, projection, filename, dtype=gdal.GDT_Int32):
+def writeBand(array, geoTransform, projection, filename, classified=False, dtype=gdal.GDT_Int32):
     '''
     This function converts np array to raster image and stores a GeoTiff file on the disk
     args: array --> numpy array containing DN values
           geoTransform --> affine transformation coefficients
           projection --> projection info
           filename --> output filepath
-    '''
+    '''   
     
     pixels_x = array.shape[1]
     pixels_y = array.shape[0]
@@ -50,6 +50,15 @@ def writeBand(array, geoTransform, projection, filename, dtype=gdal.GDT_Int32):
             dtype)
     dataset.SetGeoTransform(geoTransform)
     dataset.SetProjection(projection)
+    
+    if classified:
+        print('color table')
+        colors = gdal.ColorTable()
+        for class_value in classified:
+            colors.SetColorEntry(class_value[0], tuple(np.random.choice(range(256), size=3)))
+        dataset.GetRasterBand(1).SetRasterColorTable(colors)
+        dataset.GetRasterBand(1).SetRasterColorInterpretation(gdal.GCI_PaletteIndex)
+        
     dataset.GetRasterBand(1).WriteArray(array)
     dataset.FlushCache()
     
@@ -70,8 +79,8 @@ def spectralModulation(bands, outputPath):
     classes = {}
     class_counter = 1
     
-    for row in tqdm(range(rows)):
-        for col in range(cols):
+    for row in tqdm(range(10)):
+        for col in range(10):
             spectra = []
             for band in bands:
                 spectra.append(band[0][row][col])
@@ -102,9 +111,5 @@ def spectralModulation(bands, outputPath):
             
     with open(outputPath + '/classes.txt', 'w') as temp:
         print(classes,file=temp)
-    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_all_classes.tiff')
-    writeBand(water_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_swir_water.tiff')
-                        
-            
-    
-    
+    writeBand(classified_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_all_classes__.tif', classified=tuple(classes.values()))
+    writeBand(water_img, bands[0][2], bands[0][1], outputPath + '/LS5_TM_swir_water__.tif')

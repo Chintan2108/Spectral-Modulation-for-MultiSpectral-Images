@@ -1,5 +1,5 @@
 # Ignore the following local info folders
 local_data/
+__pycache__/
 Sentinel2_L2A/output/
 Landsat5_TM_L1/output/
-__pycache__/

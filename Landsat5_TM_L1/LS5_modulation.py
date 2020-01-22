@@ -12,7 +12,7 @@ REFLECTANCE_ADD = [(-0.003572, -0.007405, -0.004513, -0.007016, -0.007106, -0.00
                    (-0.003577, -0.007416, -0.004520, -0.007026, -0.007117, -0.007973)]
 
 
-import sys, os
+import sys, os, gdal
 sys.path.append(os.path.abspath(open('./../local_data/ACTIVEX.txt').readlines()[0].split('\n')[0]))
 import util
 import numpy as np
@@ -40,7 +40,7 @@ def level2Corr(bands, inputPath, outputPath):
         for row in tqdm(range(rows)):
             for col in range(cols):
                 corrected_img[row][col] = mult*band[0][row][col] + add
-        util.writeBand(corrected_img, band[2], band[1], os.path.join(outputPath, band_name + '.tif'))
+        util.writeBand(corrected_img, band[2], band[1], os.path.join(outputPath, band_name + '.tif'), dtype=gdal.GDT_Float64)
         print('Done')
      
 
@@ -50,7 +50,6 @@ if __name__ == "__main__":
     '''
     #perform correction using header file for DN to Reflectance conversion
     bands = ('B2','B3','B4','B5')
-
     #level2Corr(bands, PATH[2].split('\n')[0], W_PATH[2].split('\n')[0])
     
     #read corrected bands
