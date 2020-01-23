@@ -29,7 +29,7 @@ def readBand(band, PATH):
     
     return data, spatialRef, geoTransform, targetprj
 
-def writeBand(array, geoTransform, projection, filename, classified=False, dtype=gdal.GDT_Int32):
+def writeBand(array, geoTransform, projection, filename, classified=False, dtype=gdal.GDT_UInt16):
     '''
     This function converts np array to raster image and stores a GeoTiff file on the disk
     args: array --> numpy array containing DN values
@@ -52,7 +52,6 @@ def writeBand(array, geoTransform, projection, filename, classified=False, dtype
     dataset.SetProjection(projection)
     
     if classified:
-        print('color table')
         colors = gdal.ColorTable()
         for class_value in classified:
             colors.SetColorEntry(class_value[0], tuple(np.random.choice(range(256), size=3)))
@@ -79,8 +78,8 @@ def spectralModulation(bands, outputPath):
     classes = {}
     class_counter = 1
     
-    for row in tqdm(range(10)):
-        for col in range(10):
+    for row in tqdm(range(rows)):
+        for col in range(cols):
             spectra = []
             for band in bands:
                 spectra.append(band[0][row][col])

@@ -1,4 +1,14 @@
 # Ignore the following local info folders
+*.pyc
+
+__pycache__
+
+MANIFEST
+
+build
+
+dist
+
 local_data/
 __pycache__/
 Sentinel2_L2A/output/
