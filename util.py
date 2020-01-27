@@ -51,14 +51,16 @@ def writeBand(array, geoTransform, projection, filename, classified=False, dtype
     dataset.SetGeoTransform(geoTransform)
     dataset.SetProjection(projection)
     
+    band = dataset.GetRasterBand(1)
     if classified:
         colors = gdal.ColorTable()
         for class_value in classified:
             colors.SetColorEntry(class_value[0], tuple(np.random.choice(range(256), size=3)))
-        dataset.GetRasterBand(1).SetRasterColorTable(colors)
-        dataset.GetRasterBand(1).SetRasterColorInterpretation(gdal.GCI_PaletteIndex)
+        band.SetRasterColorTable(colors)
+        band.SetRasterColorInterpretation(gdal.GCI_PaletteIndex)
         
-    dataset.GetRasterBand(1).WriteArray(array)
+    band.SetNoDataValue(0)
+    band.WriteArray(array)
     dataset.FlushCache()
     
 
